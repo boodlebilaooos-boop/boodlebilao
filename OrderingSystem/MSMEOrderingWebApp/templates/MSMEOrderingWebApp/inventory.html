@@ -1196,10 +1196,10 @@
                                                             </div>
                                                         </td>
 
-                                                        <td rowspan="{{ items|length }}" class="align-middle" style="background-color: #f0f0f0de;">{{ group.grouper|title }}</td>
-                                                        <td rowspan="{{ items|length }}" class="align-middle" style="background-color: #f0f0f0de;">{{ items.0.category.name|title }}</td>
+                                                        <td rowspan="{{ items|length }}" class="align-middle" style="background-color: #f0f0f0de;">{{ group.grouper}}</td>
+                                                        <td rowspan="{{ items|length }}" class="align-middle" style="background-color: #f0f0f0de;">{{ items.0.category.name}}</td>
                                                     {% endif %}
-                                                    <td class="align-middle" style="background-color: #f0f0f0ff;">{{ product.variation_name|title }}</td>
+                                                    <td class="align-middle" style="background-color: #f0f0f0ff;">{{ product.variation_name}}</td>
                                                     <td class="align-middle product-price" style="background-color: #f0f0f0ff;">₱{{ product.price|floatformat:2 }}</td>
                                                     <td class="align-middle" style="background-color: #f0f0f0ff;">
                                                         {% if product.track_stocks %}
@@ -1281,7 +1281,7 @@
                                                             {% endif %}
                                                         </div>
                                                     </td>
-                                                    <td class="align-middle">{{ product.name|title }}</td>
+                                                    <td class="align-middle">{{ product.name}}</td>
                                                     <td class="align-middle">{{ items.0.category.name }}</td>
                                                     <td class="align-middle"><span>None</span></td>
                                                     <td class="align-middle">₱{{ product.price|floatformat:2 }}</td>
