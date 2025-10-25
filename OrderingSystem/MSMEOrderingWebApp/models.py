@@ -54,11 +54,6 @@ class ProductCategory(models.Model):
 
     def __str__(self):
         return self.name
-
-    def save(self, *args, **kwargs):
-        if self.name:
-            self.name = self.name.title()
-        super().save(*args, **kwargs)
     
 class Products(models.Model):
     category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE)
