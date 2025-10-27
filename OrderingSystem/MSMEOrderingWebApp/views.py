@@ -185,8 +185,10 @@ def print_receipt(order, orders):
         # Footer
         p.text(f"\nTotal: ₱{total:.2f}\n")
         p.text(f"Payment: {order.payment_method}\n")
-        p.text(f"Date: {order.created_at.strftime('%Y-%m-%d %H:%M')}\n\n")
-        p.text("Thank you!\n\n")
+        p.text(f"Order Date: {order.created_at.strftime('%Y-%m-%d %H:%M')}\n")
+        if order.scheduled_at:
+            p.text(f"Receiving Date: {order.scheduled_at.strftime('%Y-%m-%d')}\n")  # ✅ add this
+        p.text("\nThank you!\n\n")
         p.cut()
     except Exception as e:
         print("Failed to print receipt:", e)
@@ -3923,6 +3925,15 @@ def pos_place_order(request):
             # ✅ Get specific order type
             specific_order_type = data.get('order_type', None)
 
+            # ✅ Get receiving date (from POS cart input)
+            receiving_date_str = data.get('receiving_date', None)
+            scheduled_at = None
+            if receiving_date_str:
+                try:
+                    scheduled_at = datetime.strptime(receiving_date_str, "%Y-%m-%d")
+                except ValueError:
+                    scheduled_at = None
+
             # ✅ Determine the latest entered customer name (or use defaults)
             latest_cart = cart_items.order_by('-id').first()
             first_name = latest_cart.first_name if latest_cart and latest_cart.first_name.strip() else "Walk-in"
@@ -3969,7 +3980,7 @@ def pos_place_order(request):
                 # ✅ Track sold quantity per product
                 grouped_sales[name.lower()] = grouped_sales.get(name.lower(), 0) + item.quantity
 
-                # ✅ Create Checkout entry
+                # ✅ Create Checkout entry (with scheduled_at)
                 checkout = Checkout.objects.create(
                     first_name=first_name,
                     last_name=last_name,
@@ -3991,6 +4002,7 @@ def pos_place_order(request):
                     cash_given=cash_given,
                     change=change,
                     group_id=group_id,  # ✅ same group_id for all walkin items
+                    scheduled_at=scheduled_at,  # ✅ Save Receiving Date
                 )
                 checkout_entries.append(checkout)
 
@@ -4018,6 +4030,7 @@ def pos_place_order(request):
                 'cash_given': float(cash_given) if cash_given else None,
                 'change': float(change) if change else None,
                 'created_at': timezone.localtime(timezone.now()).strftime('%Y-%m-%d %H:%M'),
+                'receiving_date': scheduled_at.strftime('%Y-%m-%d') if scheduled_at else None,  # ✅ include in receipt
                 'hide_customer_info': True
             }
 
@@ -4031,7 +4044,7 @@ def pos_place_order(request):
                 for item in checkout_entries
             ]
 
-            # ✅ Send print job
+            # ✅ Send print job to channel layer
             channel_layer = get_channel_layer()
             async_to_sync(channel_layer.group_send)(
                 'printers',
