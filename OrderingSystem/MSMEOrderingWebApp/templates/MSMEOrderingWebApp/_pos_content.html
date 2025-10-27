@@ -188,6 +188,51 @@
         }
     }
 
+    /* 🔍 Category Dropdown Search Input */
+    #categorySearchInput {
+        width: calc(100% - 1rem);
+        margin: 0.5rem;
+        padding: 0.4rem 0.75rem;
+        font-size: 14px;
+        border: 1px solid var(--primary-color);
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+
+    #categorySearchInput:focus {
+        outline: none;
+        border-color: var(--secondary-color);
+        box-shadow: 0 0 3px var(--secondary-color);
+    }
+
+    /* Scrollable dropdown */
+    .category-dropdown .dropdown-menu {
+        max-height: 250px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        font-family: '{{ customization.body_font_family|default:"Arial" }}';
+        scrollbar-color: var(--primary-color); /* optional styling */
+    }
+
+    /* Subtle hover effect */
+    .category-dropdown .dropdown-item:hover {
+        background-color: var(--primary-color);
+        color: #fff;
+        opacity: 70%;
+    }
+
+    /* ✅ Active (selected) category */
+    .category-dropdown .dropdown-item.active {
+        background-color: var(--secondary-color);
+        color: #fff;
+        font-weight: 600;;
+    }
+
+    /* Optional: smooth highlight transition */
+    .category-dropdown .dropdown-item {
+        transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
 
     /* Align dropdown button content nicely */
     .category-dropdown .btn {
@@ -219,14 +264,6 @@
         box-shadow: none;
     }
 
-    /* Make dropdown menu scrollable */
-    .category-dropdown .dropdown-menu {
-        max-height: 250px; /* adjust as needed */
-        overflow-y: auto;
-        overflow-x: hidden;
-        scrollbar-width: thin; /* for Firefox */
-        scrollbar-color: var(--primary-color); /* optional styling */
-    }
 
     /* Optional: custom scrollbar for WebKit browsers */
     .category-dropdown .dropdown-menu::-webkit-scrollbar {
@@ -244,21 +281,20 @@
 
     /* Right-align the dropdown caret */
     .category-dropdown .dropdown-toggle::after {
-    margin-left: auto;
-    float: right;
-    position: absolute;
-    right: 1rem; /* adjust spacing */
-    top: 50%;
-    transform: translateY(-50%);
+        margin-left: auto;
+        float: right;
+        position: absolute;
+        right: 1rem; /* adjust spacing */
+        top: 50%;
+        transform: translateY(-50%);
     }
 
     /* Make sure text doesn’t overlap with caret */
     .category-dropdown .dropdown-toggle {
-    position: relative;
-    text-align: left;
-    padding-right: 2rem; /* add space for caret */
+        position: relative;
+        text-align: left;
+        padding-right: 2rem; /* add space for caret */
     }
-
 
     .search-input-group {
         position: relative;
@@ -860,6 +896,37 @@
         
     }
 
+    /* 🔍 Category Dropdown Search Input */
+    #categorySearchInput {
+        width: calc(100% - 1rem);
+        margin: 0.5rem;
+        padding: 0.4rem 0.75rem;
+        font-size: 14px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+    }
+
+    #categorySearchInput:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 3px var(--primary-color);
+    }
+
+    /* Make dropdown scrollable when many categories */
+    .category-dropdown .dropdown-menu {
+        max-height: 250px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+    }
+
+    /* Subtle hover effect for items */
+    .category-dropdown .dropdown-item:hover {
+        background-color: var(--primary-color);
+        color: #fff;
+    }
+
+
 </style>
 
 
@@ -1322,5 +1389,41 @@
     }
 
 </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const dropdownMenu = document.querySelector(".category-dropdown .dropdown-menu");
+    const dropdownButton = document.getElementById("categoryDropdown");
+
+    if (!dropdownMenu) return;
+
+    // Create search box element
+    const searchBox = document.createElement("div");
+    searchBox.innerHTML = `
+        <input type="text" id="categorySearchInput" class="form-control form-control-sm mx-2 my-2" placeholder="Search category...">
+    `;
+    dropdownMenu.prepend(searchBox);
+
+    const searchInput = document.getElementById("categorySearchInput");
+
+    // Filter dropdown items
+    searchInput.addEventListener("input", function () {
+        const searchTerm = this.value.toLowerCase();
+        dropdownMenu.querySelectorAll(".dropdown-item").forEach(item => {
+            const text = item.textContent.toLowerCase();
+            item.style.display = text.includes(searchTerm) ? "block" : "none";
+        });
+    });
+
+    // Optional: clear search when dropdown closes
+    dropdownButton.addEventListener("hide.bs.dropdown", function () {
+        searchInput.value = "";
+        dropdownMenu.querySelectorAll(".dropdown-item").forEach(item => {
+            item.style.display = "block";
+        });
+    });
+});
+</script>
+
 
 {% endblock %}
