@@ -1039,7 +1039,82 @@
         }
     }
 
-    
+   /* 🧭 Product Category Select - same style as .category-dropdown */
+    #product_category {
+        position: relative;
+        z-index: 1050;
+        width: 100%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: left;
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--primary-color);
+        background-color: #fff;
+        color: {{ customization.body_font_color|default:"#000" }};
+        font-family: '{{ customization.body_font_family|default:"Arial" }}';
+        font-size: {% if customization.body_font_size and customization.body_font_size|add:'0' > 16 %}16{% else %}{{ customization.body_font_size|default:14 }}{% endif %}px;
+        border-radius: {{ customization.input_rounded_corner|default:4 }}px;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        cursor: pointer;
+
+        /* remove native select styling */
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+    }
+
+    /* Hover & focus */
+    #product_category:hover,
+    #product_category:focus {
+        border-color: var(--secondary-color);
+        color: var(--secondary-color);
+        box-shadow: none;
+        outline: none;
+    }
+
+
+    /* Dropdown (option list) styling */
+    #product_category option {
+        font-size: inherit;
+        font-weight: 500;
+        font-family: '{{ customization.body_font_family|default:"Arial" }}';
+        color: {{ customization.body_font_color|default:"#000000" }};
+        background-color: #fff;
+        transition: background-color 0.2s ease, color 0.2s ease;
+        padding: 0.5rem;
+    }
+
+    /* Option hover and selected (simulating dropdown-item behavior) */
+    #product_category option:hover,
+    #product_category option:checked {
+        background-color: var(--secondary-color);
+        color: #fff;
+        font-weight: 600;
+    }
+
+    /* Scroll styling (for long lists) */
+    #product_category::-webkit-scrollbar {
+        width: 6px;
+    }
+    #product_category::-webkit-scrollbar-thumb {
+        background-color: var(--primary-color);
+        border-radius: 10px;
+    }
+    #product_category::-webkit-scrollbar-track {
+        background-color: #f1f1f1;
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 576px) {
+        #product_category {
+            padding: 0.65rem 0.75rem;
+            font-size: 13px;
+        }
+    }
+ 
     
     </style>
 <div>
@@ -1201,7 +1276,7 @@
                 <div class="row g-2 align-items-center">
                     <!-- Search Bar -->
                     <div class="col-12 col-md-7">
-                        <div class="search-wrapper mb-2 mb-md-0">
+                        <div class="search-wrapper mb-1 mb-md-0">
                             <input
                                 type="text"
                                 id="searchInput"
@@ -1557,6 +1632,24 @@
 </div>
 
 <script>
+
+    function filterCategoryList() {
+        const input = document.getElementById('categorySearchInput');
+        const filter = input.value.toLowerCase();
+        const dropdownItems = document.querySelectorAll('.category-dropdown .dropdown-item');
+
+        dropdownItems.forEach(item => {
+            // Skip divider or "Add New" if needed
+            if (item.classList.contains('dropdown-divider')) return;
+
+            const text = item.textContent.toLowerCase();
+            if (text.includes(filter)) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
 
     document.addEventListener('DOMContentLoaded', function () {
         const productNameInput = document.getElementById('product_name');
