@@ -114,25 +114,35 @@
         gap: 0.75rem;
     }
 
-    /* Search and dropdown side by side */
+    /* Search and dropdown row */
     .search-and-dropdown {
         display: flex;
-        gap: 10px;
-        width: 100%;
         align-items: center;
+        width: 100%;
+        gap: 0.75rem;
     }
 
-    /* Search takes more width */
     .search-wrapper {
-        flex: 1 1 200px;
+        flex: 1.5; /* make search wider */
     }
     .search-input {
         width: 100%;
     }
 
-    /* Category smaller width */
+    /* Category dropdown base */
     .category-dropdown {
-        flex: 1 1 100px; /* narrow on small screens */
+        flex: 0.6;
+        min-width: 140px;
+    }
+
+    /* Dropdown button truncation */
+    #categoryDropdown {
+        max-width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-align: left;
+        cursor: pointer;
     }
 
     /* Cart full width by default */
@@ -140,55 +150,32 @@
         width: 100%;
     }
 
+    /* 🔹 Large screens: all in one line */
     @media (min-width: 992px) {
         .toolbar-flex {
             flex-direction: row;
             align-items: center;
+            justify-content: space-between;
             gap: 1.2rem;
-            justify-content: space-between; /* Keeps spacing balanced */
-
         }
 
         .search-and-dropdown {
             flex: 1 1 auto;
-            display: flex;
-            align-items: center;
         }
 
-        .search-wrapper {
-            flex: 0 0 80%;
-        }
-        .category-dropdown {
-            flex: 0 0 20%;
-        }
-
-        /* Cart auto width */
-        .cart-btn-container {
-            flex: 0 0 auto;
-            width: auto;
-        }
+        .search-wrapper { flex: 0 0 80%; }
+        .category-dropdown { flex: 0 0 20%; }
+        .cart-btn-container { width: auto; flex: 0 0 auto; }
     }
 
-    /* Medium to small: keep search+dropdown inline, cart full width below */
+    /* 🔹 Medium–small: search + dropdown inline, cart below full width */
     @media (max-width: 991.98px) {
-        .toolbar-flex {
-            flex-direction: column;
-        }
-        .search-and-dropdown {
-            flex-wrap: nowrap;
-        }
-        .search-wrapper {
-            flex: 1 1 180px;
-        }
-        .category-dropdown {
-            flex: 0 0 auto;
-        }
-        .cart-btn-container {
-            width: 100%;
-        }
+        .toolbar-flex { flex-direction: column; }
+        .search-and-dropdown { flex-wrap: nowrap; }
+        .cart-btn-container { width: 100%; }
     }
 
-    /* 🔍 Category Dropdown Search Input */
+    /* 🔍 Dropdown search input */
     #categorySearchInput {
         width: calc(100% - 1rem);
         margin: 0.5rem;
@@ -198,7 +185,6 @@
         border-radius: 6px;
         transition: all 0.2s ease;
     }
-
     #categorySearchInput:focus {
         outline: none;
         border-color: var(--secondary-color);
@@ -210,40 +196,30 @@
         max-height: 250px;
         overflow-y: auto;
         scrollbar-width: thin;
+        scrollbar-color: var(--primary-color);
         font-family: '{{ customization.body_font_family|default:"Arial" }}';
-        scrollbar-color: var(--primary-color); /* optional styling */
     }
 
-    /* Subtle hover effect */
+    /* Dropdown items */
+    .category-dropdown .dropdown-item {
+        transition: background-color 0.2s ease, color 0.2s ease;
+    }
     .category-dropdown .dropdown-item:hover {
         background-color: var(--primary-color);
         color: #fff;
         opacity: 70%;
     }
-
-    /* ✅ Active (selected) category */
     .category-dropdown .dropdown-item.active {
         background-color: var(--secondary-color);
         color: #fff;
-        font-weight: 600;;
+        font-weight: 600;
     }
 
-    /* Optional: smooth highlight transition */
-    .category-dropdown .dropdown-item {
-        transition: background-color 0.2s ease, color 0.2s ease;
-    }
-
-
-    /* Align dropdown button content nicely */
+    /* Dropdown button styling */
     .category-dropdown .btn {
         display: inline-flex;
         align-items: center;
         justify-content: left;
-    }
-    
-
-    /* Category Dropdown */
-    .category-dropdown .btn {
         padding: 0.75rem 1rem;
         border-color: var(--primary-color);
         color: {{ customization.body_font_color|default:"#000000" }};
@@ -255,7 +231,6 @@
         background-color: #fff;
         transition: all 0.3s ease;
     }
-
     .category-dropdown .btn:hover,
     .category-dropdown .btn:focus,
     .category-dropdown .btn.show {
@@ -264,37 +239,31 @@
         box-shadow: none;
     }
 
-
-    /* Optional: custom scrollbar for WebKit browsers */
-    .category-dropdown .dropdown-menu::-webkit-scrollbar {
-        width: 6px;
+    /* Caret alignment */
+    .category-dropdown .dropdown-toggle {
+        position: relative;
+        text-align: left;
+        padding-right: 2rem;
     }
-
-    .category-dropdown .dropdown-menu::-webkit-scrollbar-thumb {
-        background-color: var(--primary-color);
-        border-radius: 10px;
-    }
-
-    .category-dropdown .dropdown-menu::-webkit-scrollbar-track {
-        background-color: #f1f1f1;
-    }
-
-    /* Right-align the dropdown caret */
     .category-dropdown .dropdown-toggle::after {
-        margin-left: auto;
-        float: right;
         position: absolute;
-        right: 1rem; /* adjust spacing */
+        right: 1rem;
         top: 50%;
         transform: translateY(-50%);
     }
 
-    /* Make sure text doesn’t overlap with caret */
-    .category-dropdown .dropdown-toggle {
-        position: relative;
-        text-align: left;
-        padding-right: 2rem; /* add space for caret */
+    /* Scrollbar (WebKit only) */
+    .category-dropdown .dropdown-menu::-webkit-scrollbar {
+        width: 6px;
     }
+    .category-dropdown .dropdown-menu::-webkit-scrollbar-thumb {
+        background-color: var(--primary-color);
+        border-radius: 10px;
+    }
+    .category-dropdown .dropdown-menu::-webkit-scrollbar-track {
+        background-color: #f1f1f1;
+    }
+
 
     .search-input-group {
         position: relative;
@@ -1112,6 +1081,8 @@
         const dropdownButton = document.getElementById('categoryDropdown');
         dropdownButton.innerHTML = el.innerHTML;
 
+        updateDropdownText(el);
+
         // Perform filtering
         filterProducts();
     }
@@ -1142,6 +1113,27 @@
 
         document.getElementById('emptyState').style.display = visibleCount === 0 ? 'block' : 'none';
     }
+
+    function updateDropdownText(el) {
+        const dropdownButton = document.getElementById('categoryDropdown');
+        const fullText = el.textContent.trim();
+
+        // Set full text as tooltip
+        dropdownButton.title = fullText;
+
+        // Determine max length based on screen width
+        const maxLength = window.innerWidth <= 576 ? 7 : 15;
+
+        // Truncate text if too long
+        const displayText =
+            fullText.length > maxLength
+                ? fullText.substring(0, maxLength) + '...'
+                : fullText;
+
+        dropdownButton.textContent = displayText;
+    }
+
+
 
     function selectOrderType(element, type) {
         document.querySelectorAll('.order-type-option').forEach(opt => opt.classList.remove('active'));
