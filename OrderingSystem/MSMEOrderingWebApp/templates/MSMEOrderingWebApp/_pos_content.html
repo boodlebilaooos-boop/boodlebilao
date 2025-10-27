@@ -193,8 +193,9 @@
     .category-dropdown .btn {
         display: inline-flex;
         align-items: center;
-        justify-content: center;
+        justify-content: left;
     }
+    
 
     /* Category Dropdown */
     .category-dropdown .btn {
@@ -226,21 +227,37 @@
         scrollbar-width: thin; /* for Firefox */
         scrollbar-color: var(--primary-color); /* optional styling */
     }
-    
+
     /* Optional: custom scrollbar for WebKit browsers */
     .category-dropdown .dropdown-menu::-webkit-scrollbar {
         width: 6px;
     }
-    
+
     .category-dropdown .dropdown-menu::-webkit-scrollbar-thumb {
         background-color: var(--primary-color);
         border-radius: 10px;
     }
-    
+
     .category-dropdown .dropdown-menu::-webkit-scrollbar-track {
         background-color: #f1f1f1;
     }
 
+    /* Right-align the dropdown caret */
+    .category-dropdown .dropdown-toggle::after {
+    margin-left: auto;
+    float: right;
+    position: absolute;
+    right: 1rem; /* adjust spacing */
+    top: 50%;
+    transform: translateY(-50%);
+    }
+
+    /* Make sure text doesn’t overlap with caret */
+    .category-dropdown .dropdown-toggle {
+    position: relative;
+    text-align: left;
+    padding-right: 2rem; /* add space for caret */
+    }
 
 
     .search-input-group {
@@ -865,27 +882,28 @@
 
             <!-- Category Dropdown -->
             <div class="category-dropdown">
-            <button class="btn btn-outline-secondary dropdown-toggle w-100" type="button"
-                    id="categoryDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                <i class="fas fa-th-large me-1"></i> All
-            </button>
-            <ul class="dropdown-menu" aria-labelledby="categoryDropdown">
-                <li>
-                <a class="dropdown-item active" data-category="" onclick="filterProductsByCategory('', this)">
-                    <i class="fas fa-th-large me-1"></i> All
-                </a>
-                </li>
-                {% for cat in categories %}
-                <li>
-                <a class="dropdown-item" data-category="{{ cat.name }}"
-                    onclick="filterProductsByCategory('{{ cat.name }}', this)">
-                    <i class="fas fa-tag me-1"></i> {{ cat.name }}
-                </a>
-                </li>
-                {% endfor %}
-            </ul>
+
+                <button class="btn btn-outline-secondary dropdown-toggle w-100" type="button"
+                        id="categoryDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    All
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="categoryDropdown">
+                    <li>
+                    <a class="dropdown-item active" data-category="" onclick="filterProductsByCategory('', this)">
+                        All
+                    </a>
+                    </li>
+                    {% for cat in categories %}
+                    <li>
+                    <a class="dropdown-item" data-category="{{ cat.name }}"
+                        onclick="filterProductsByCategory('{{ cat.name }}', this)">
+                        {{ cat.name }}
+                    </a>
+                    </li>
+                    {% endfor %}
+                </ul>
             </div>
-        </div>
+        </div>    
 
         <!-- View Cart Button (placed as separate block; width controlled by CSS) -->
         <div class="cart-btn-container">
