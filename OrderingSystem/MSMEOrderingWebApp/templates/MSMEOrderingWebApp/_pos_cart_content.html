@@ -969,6 +969,16 @@
                 </div>
             </div>
 
+            <!-- Receiving Date -->
+            <div class="options-card">
+                <div class="option-group">
+                    <h4 class="option-title">
+                        <i class="fas fa-calendar-day"></i>
+                        Receiving Date
+                    </h4>
+                    <input type="date" id="receiving-date" class="form-control">
+                </div>
+            </div>
 
             <!-- Payment Options -->
             <div class="options-card">
@@ -1534,16 +1544,17 @@
             return;
         }
 
-        // ✅ Get the current order type value when placing the order
         const orderType = document.getElementById("orderType")?.value || null;
+        const receivingDate = document.getElementById("receiving-date")?.value || null;
 
         const orderData = {
             payment_method: selectedPaymentMethod,
-            notes: '',  
+            notes: '',
             cash_amount: selectedPaymentMethod === 'cash'
                 ? parseFloat(document.getElementById('cash-amount').value || 0)
                 : null,
-            order_type: orderType   // ✅ include here
+            order_type: orderType,
+            receiving_date: receivingDate,  // ✅ include this new field
         };
 
         fetch("{% url 'pos_place_order' %}", {
@@ -1558,7 +1569,6 @@
         .then(data => {
             if (data.success) {
                 showOrderPopup("Success", "Order placed successfully!", true);
-
                 const modalEl = document.getElementById('orderResultModal');
                 modalEl.addEventListener('hidden.bs.modal', function () {
                     window.location.href = "{% url back_url %}";
