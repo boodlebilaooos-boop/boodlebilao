@@ -92,5 +92,6 @@ urlpatterns = [
     path("reprint_receipt/", views.reprint_receipt, name="reprint_receipt"),
     path('get-product-status/', views.get_product_status, name='get_product_status'),
     path('get-product-details/', views.get_product_details, name='get_product_details'),
+    path('delete_category/<int:category_id>/', views.delete_category, name='delete_category'),
 ]
 
