@@ -102,7 +102,13 @@ def reprint_receipt(request):
             ]
         }
 
-        # Add delivery fee if applicable
+        # ✅ Include full datetime (date + time) for receiving_date if applicable
+        if reference_order.scheduled_at:
+            print_data["order"]["receiving_date"] = timezone.localtime(
+                reference_order.scheduled_at
+            ).strftime('%Y-%m-%d %H:%M:%S')
+
+        # ✅ Add delivery fee if applicable
         if reference_order.order_type == "delivery" and reference_order.delivery_fee:
             print_data["order"]["delivery_fee"] = float(reference_order.delivery_fee)
 
@@ -111,7 +117,7 @@ def reprint_receipt(request):
             print_data["order"]["cash_given"] = float(reference_order.cash_given or 0)
             print_data["order"]["change"] = float(reference_order.change or 0)
 
-        # Send to printer group through WebSocket
+        # ✅ Send to printer group through WebSocket
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
             "printers",
