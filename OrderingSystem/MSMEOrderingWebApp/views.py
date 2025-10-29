@@ -267,7 +267,7 @@ def print_receipt(order, orders):
         p.text(f"Payment: {order.payment_method}\n")
         p.text(f"Order Date: {order.created_at.strftime('%Y-%m-%d %H:%M')}\n")
         if order.scheduled_at:
-            p.text(f"Receiving Date: {order.scheduled_at.strftime('%Y-%m-%d')}\n")  # ✅ add this
+            p.text(f"Receiving Date: {order.scheduled_at.strftime('%Y-%m-%d %H:%M')}\n")  # ✅ add this
         p.text("\nThank you!\n\n")
         p.cut()
     except Exception as e:
@@ -4175,9 +4175,17 @@ def pos_place_order(request):
             scheduled_at = None
             if receiving_date_str:
                 try:
-                    scheduled_at = datetime.strptime(receiving_date_str, "%Y-%m-%d")
+                    # Handles full datetime-local string (e.g. 2025-10-29T14:30)
+                    scheduled_at = timezone.make_aware(
+                        datetime.strptime(receiving_date_str, "%Y-%m-%dT%H:%M"),
+                        timezone=timezone.get_fixed_timezone(480)  # 480 minutes = UTC+8 (Philippines)
+                    )
                 except ValueError:
-                    scheduled_at = None
+                    try:
+                        # Fallback if only date was sent
+                        scheduled_at = datetime.strptime(receiving_date_str, "%Y-%m-%d")
+                    except ValueError:
+                        scheduled_at = None
 
             # ✅ Determine the latest entered customer name (or use defaults)
             latest_cart = cart_items.order_by('-id').first()
@@ -4277,7 +4285,7 @@ def pos_place_order(request):
                 'cash_given': float(cash_given) if cash_given else None,
                 'change': float(change) if change else None,
                 'created_at': timezone.localtime(timezone.now()).strftime('%Y-%m-%d %H:%M'),
-                'receiving_date': scheduled_at.strftime('%Y-%m-%d') if scheduled_at else None,  # ✅ include in receipt
+                'receiving_date': timezone.localtime(scheduled_at).strftime('%Y-%m-%d %H:%M') if scheduled_at else None,
                 'hide_customer_info': True
             }
 
