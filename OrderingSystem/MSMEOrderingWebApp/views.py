@@ -2381,7 +2381,7 @@ def sales_report_pdf(request):
     elif report_type == "inventory":
         story += _generate_inventory_report(period_label, styles)
     elif report_type == "top_products":
-        story += _generate_products_report(period_label, styles)
+        story += _generate_products_report(orders, period_label, styles)
 
     # --- Build PDF ---
     doc.build(story)
@@ -3398,7 +3398,7 @@ import matplotlib.pyplot as plt
 from reportlab.platypus import Image, Table, TableStyle, Paragraph, Spacer
 import io
 
-def _generate_products_report(period_label, styles):
+def _generate_products_report(orders, period_label, styles):
     """Generate enhanced top products report with tables, charts, and explanations"""
     story = []
     story.append(Paragraph("TOP PRODUCTS REPORT", styles['title']))
@@ -3406,22 +3406,33 @@ def _generate_products_report(period_label, styles):
     if period_label:
         story.append(Paragraph(period_label, styles['subtitle']))
 
-    products = Products.objects.all().order_by("-sold_count")
-    total_products = products.count()
-    products_with_sales = products.filter(sold_count__gt=0).count()
-    total_units_sold = sum(product.sold_count for product in products)
+    # ✅ Only completed orders
+    completed_orders = orders.filter(status__iexact="completed")
 
-    # ----------------- SUMMARY -----------------
-# ----------------- PRODUCT PERFORMANCE SUMMARY -----------------
+    # ✅ Fetch all products
+    products = Products.objects.all()
+    total_products = products.count()  # total products in catalog
+
+    # Calculate product sales from completed orders
+    product_sales = defaultdict(lambda: {"quantity": 0, "revenue": 0})
+    for order in completed_orders:
+        key = order.product_name
+        variation = getattr(order, "variation_name", None)
+        if variation and variation.lower() != "default":
+            key = f"{order.product_name} - {variation}"
+        product_sales[key]["quantity"] += order.quantity
+        product_sales[key]["revenue"] += float(order.price)
+
+    products_with_sales = sum(1 for p in product_sales.values() if p["quantity"] > 0)
+    total_units_sold = sum(p["quantity"] for p in product_sales.values())
+
+    # ----------------- PRODUCT PERFORMANCE SUMMARY -----------------
     story.append(Paragraph("PRODUCT PERFORMANCE SUMMARY", styles['heading']))
-
-    # ---- Table version of summary ----
     summary_data = [
         ["Total Products", f"{total_products:,}"],
         ["Products with Sales", f"{products_with_sales:,}"],
         ["Total Units Sold", f"{total_units_sold:,}"]
     ]
-
     if products_with_sales > 0:
         summary_data.append(["Average per Product", f"{(total_units_sold/products_with_sales):.1f} units"])
     else:
@@ -3436,11 +3447,9 @@ def _generate_products_report(period_label, styles):
     plt.figure(figsize=(5,4))
     bars = ["Total Products", "With Sales", "Units Sold"]
     values = [total_products, products_with_sales, total_units_sold]
-
     plt.bar(bars, values, color=["#607D8B", "#4CAF50", "#2196F3"])
     plt.title("Products & Sales Overview")
     plt.ylabel("Count")
-
     buf = io.BytesIO()
     plt.savefig(buf, format="png", bbox_inches="tight")
     plt.close()
@@ -3457,19 +3466,17 @@ def _generate_products_report(period_label, styles):
         explanation = "More than half of the products achieved sales, with healthy market engagement."
     else:
         explanation = "Less than half of the products recorded sales, highlighting opportunities for marketing or product adjustments."
-
     story.append(Paragraph(explanation, styles['summary']))
     story.append(Spacer(1, 20))
-
 
     # ----------------- TOP 10 PRODUCTS (TABLE + CHART) -----------------
     if products_with_sales > 0:
         story.append(Paragraph("TOP 10 PRODUCTS", styles['heading']))
+        ranked_products = sorted(product_sales.items(), key=lambda x: x[1]["quantity"], reverse=True)[:10]
 
-        top_products = products[:10]
         table_data = [["Rank", "Product", "Units Sold"]]
-        for i, p in enumerate(top_products, 1):
-            table_data.append([str(i), p.name[:35] + "…" if len(p.name) > 35 else p.name, str(p.sold_count)])
+        for i, (name, data) in enumerate(ranked_products, 1):
+            table_data.append([str(i), name[:35] + "…" if len(name) > 35 else name, str(data["quantity"])])
 
         table = Table(table_data, colWidths=[40, 200, 100])
         table.setStyle(_get_table_style())
@@ -3477,11 +3484,11 @@ def _generate_products_report(period_label, styles):
         story.append(Spacer(1, 10))
 
         # Bar Chart
-        labels = [p.name[:15] + "…" if len(p.name) > 15 else p.name for p in top_products]
-        counts = [p.sold_count for p in top_products]
+        labels = [name[:15] + "…" if len(name) > 15 else name for name, _ in ranked_products]
+        counts = [data["quantity"] for _, data in ranked_products]
 
         plt.figure(figsize=(6, 4))
-        plt.barh(labels, counts)
+        plt.barh(labels, counts, color="#4CAF50")
         plt.xlabel("Units Sold")
         plt.title("Top 10 Products by Units Sold")
         plt.gca().invert_yaxis()
@@ -3493,21 +3500,21 @@ def _generate_products_report(period_label, styles):
         story.append(Spacer(1, 10))
 
         # Explanation
-        if counts[0] >= counts[1] * 2:
+        if len(counts) > 1 and counts[0] >= counts[1] * 2:
             explanation = f"The top product ({labels[0]}) significantly outperformed others, selling over twice as much as the next product."
-        elif counts[0] == counts[-1]:
+        elif len(set(counts)) == 1:
             explanation = "All top 10 products sold at nearly the same level, indicating a balanced demand."
         else:
             explanation = f"The top products show varied performance, with {labels[0]} leading at {counts[0]} units."
         story.append(Paragraph(explanation, styles['summary']))
         story.append(Spacer(1, 20))
 
-    # ----------------- PERFORMANCE CATEGORIES (TABLE + PIE) -----------------
+    # ----------------- PERFORMANCE CATEGORIES -----------------
     story.append(Paragraph("PERFORMANCE CATEGORIES", styles['heading']))
-    high_performers = products.filter(sold_count__gte=50).count()
-    medium_performers = products.filter(sold_count__range=(10, 49)).count()
-    low_performers = products.filter(sold_count__range=(1, 9)).count()
-    no_sales = products.filter(sold_count=0).count()
+    high_performers = sum(1 for p in product_sales.values() if p["quantity"] >= 50)
+    medium_performers = sum(1 for p in product_sales.values() if 10 <= p["quantity"] <= 49)
+    low_performers = sum(1 for p in product_sales.values() if 1 <= p["quantity"] <= 9)
+    no_sales = total_products - (high_performers + medium_performers + low_performers)
 
     category_data = [
         ["Category", "Count", "Action Needed"],
@@ -3520,7 +3527,6 @@ def _generate_products_report(period_label, styles):
     category_table.setStyle(_get_table_style())
     story.append(category_table)
     story.append(Spacer(1, 10))
-
 
     # Explanation
     if high_performers > (medium_performers + low_performers + no_sales):
