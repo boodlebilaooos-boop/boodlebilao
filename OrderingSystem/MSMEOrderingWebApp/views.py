@@ -3575,7 +3575,7 @@ def _get_table_style():
         ("INNERGRID", (0, 1), (-1, -1), 0.5, colors.Color(0.8, 0.8, 0.8)),
     ])
 
-   from openpyxl import Workbook
+from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Border, Side, Alignment
 from openpyxl.utils import get_column_letter
 
