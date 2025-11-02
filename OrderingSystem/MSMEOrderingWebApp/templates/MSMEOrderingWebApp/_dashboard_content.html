@@ -2043,7 +2043,8 @@ const statusColors = {
         event.target.classList.add('active');
     }
 
-    // Date Filter Logic
+
+    // --- Generate Report Modal Logic ---
     document.addEventListener("DOMContentLoaded", function () {
         const reportForm = document.getElementById("reportForm");
 
@@ -2069,6 +2070,7 @@ const statusColors = {
             window.location.href = `${url}?${params}`;
         });
     });
+
 
     document.addEventListener('DOMContentLoaded', function () {
         const container = document.getElementById('dateInputContainer');
@@ -2448,6 +2450,7 @@ function getCookie(name) {
     }
     return cookieValue;
 }
+
 
 </script>
 {% endblock %}
